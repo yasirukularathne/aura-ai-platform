@@ -47,8 +47,11 @@ def ask_question(question: str):
         "sources": [
             {
                 "source": doc.metadata.get("source"),
-                "page": doc.metadata.get("page"),
-                "content": doc.page_content
+                "page": (
+                    doc.metadata.get("page", 0) + 1
+                    if isinstance(doc.metadata.get("page"), int)
+                    else None
+                ),
             }
             for doc in documents
         ]
