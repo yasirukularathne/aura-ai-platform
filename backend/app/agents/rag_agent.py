@@ -125,6 +125,23 @@ def evidence_node(state: RAGState):
     }
 
 
+def evidence_node(state):
+
+    from app.rag.security.evidence_checker import (
+        check_reranked_evidence
+    )
+
+    result = check_reranked_evidence(
+        state["reranked_documents"]
+    )
+
+    return {
+        "evidence_sufficient": result["sufficient"],
+        "evidence_score": result["score"],
+        "error": result["reason"]
+    }
+
+
 # ============================================================
 # 5. ROUTER
 # ============================================================
@@ -141,9 +158,15 @@ def evidence_router(state: RAGState):
 # 6. GENERATE ANSWER
 # ============================================================
 
-def generate_node(state: RAGState):
+def generate_node(state):
 
-    documents = state["retrieved_documents"]
+    from app.rag.generation.llm import get_llm
+    from app.rag.generation.prompt import RAG_PROMPT
+
+    documents = [
+        item["document"]
+        for item in state["reranked_documents"]
+    ]
 
     context = "\n\n".join(
         document.page_content
@@ -162,14 +185,7 @@ def generate_node(state: RAGState):
     citations = [
         {
             "document": document.metadata.get("source"),
-            "page": (
-                document.metadata.get("page", 0) + 1
-                if isinstance(
-                    document.metadata.get("page"),
-                    int
-                )
-                else document.metadata.get("page_label")
-            )
+            "page": document.metadata.get("page"),
         }
         for document in documents
     ]
@@ -203,7 +219,6 @@ def build_rag_graph():
 
     graph = StateGraph(RAGState)
 
-    # Nodes
     graph.add_node(
         "analyze",
         analyze_node
@@ -211,7 +226,12 @@ def build_rag_graph():
 
     graph.add_node(
         "retrieve",
-        retrieve_node
+        hybrid_retrieve_node
+    )
+
+    graph.add_node(
+        "rerank",
+        rerank_node
     )
 
     graph.add_node(
@@ -229,25 +249,26 @@ def build_rag_graph():
         safe_response_node
     )
 
-    # Start
     graph.add_edge(
         START,
         "analyze"
     )
 
-    # Analyze → Retrieve
     graph.add_edge(
         "analyze",
         "retrieve"
     )
 
-    # Retrieve → Evidence Check
     graph.add_edge(
         "retrieve",
+        "rerank"
+    )
+
+    graph.add_edge(
+        "rerank",
         "evidence_check"
     )
 
-    # Evidence Check → Decision
     graph.add_conditional_edges(
         "evidence_check",
         evidence_router,
@@ -257,7 +278,6 @@ def build_rag_graph():
         }
     )
 
-    # End
     graph.add_edge(
         "generate",
         END
