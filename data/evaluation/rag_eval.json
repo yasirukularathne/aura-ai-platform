@@ -1,0 +1,448 @@
+{
+  "dataset": "aura-company-policy-rag-evaluation",
+  "source_document": "data/documents/company_policy.pdf",
+  "cases": [
+    {
+      "id": "hiv-001",
+      "category": "grounded",
+      "question": "Is HIV testing required before employment?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "No. HIV testing is not a prerequisite for employment, and the company does not conduct pre-employment testing.",
+      "required_terms": ["not a prerequisite", "employment", "pre-employment testing"],
+      "must_have_sources": true
+    },
+    {
+      "id": "hiv-002",
+      "category": "grounded",
+      "question": "What happens to an employee's HIV test results?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "HIV test results are confidential and are not disclosed to the Partners without the employee's written consent.",
+      "required_terms": ["confidential", "written consent"],
+      "must_have_sources": true
+    },
+    {
+      "id": "hiv-003",
+      "category": "grounded",
+      "question": "Can an employee be discriminated against because of HIV status?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "No. Employees may not be discriminated against based on HIV status, and discriminatory action may lead to disciplinary action.",
+      "required_terms": ["not be discriminated", "HIV status"],
+      "must_have_sources": true
+    },
+    {
+      "id": "hiv-004",
+      "category": "grounded",
+      "question": "Is HIV testing a condition of being hired?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "No. The policy states that HIV testing is not a prerequisite for employment.",
+      "required_terms": ["not a prerequisite", "employment"],
+      "must_have_sources": true
+    },
+    {
+      "id": "hiv-005",
+      "category": "grounded",
+      "question": "Does the company conduct pre-employment HIV tests?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "No. The company will not conduct pre-employment HIV testing.",
+      "required_terms": ["not conduct", "pre-employment testing"],
+      "must_have_sources": true
+    },
+    {
+      "id": "hiv-006",
+      "category": "grounded",
+      "question": "Can an employee be referred for a medical examination because of persistent illness?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "Yes. In cases of persistent illness, an employee may be referred for medical examination and may be required to undertake an HIV test.",
+      "required_terms": ["persistent illness", "medical examination", "HIV test"],
+      "must_have_sources": true
+    },
+    {
+      "id": "hiv-007",
+      "category": "grounded",
+      "question": "Is an HIV test automatically obligatory after a medical referral?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "No. A referral for medical examination does not make taking an HIV test obligatory.",
+      "required_terms": ["not", "obligatory", "medical examination"],
+      "must_have_sources": true
+    },
+    {
+      "id": "hiv-008",
+      "category": "grounded",
+      "question": "Who can receive an employee's HIV test results?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "The results will not be disclosed to the Partners without the employee's written consent, and disclosure is strictly confidential.",
+      "required_terms": ["Partners", "written consent", "confidential"],
+      "must_have_sources": true
+    },
+    {
+      "id": "hiv-009",
+      "category": "grounded",
+      "question": "What counselling is provided before HIV testing?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "Every employee receives pre-test counselling before undergoing an HIV test.",
+      "required_terms": ["pre-test counselling"],
+      "must_have_sources": true
+    },
+    {
+      "id": "hiv-010",
+      "category": "grounded",
+      "question": "What counselling is provided after an HIV test?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "Each employee receives post-test counselling following an HIV test.",
+      "required_terms": ["post-test counselling"],
+      "must_have_sources": true
+    },
+    {
+      "id": "hiv-011",
+      "category": "grounded",
+      "question": "Can HIV-positive employees receive the same benefits as other employees?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "Yes. HIV-infected employees are entitled to the same benefits as all other employees.",
+      "required_terms": ["same benefits", "all other employees"],
+      "must_have_sources": true
+    },
+    {
+      "id": "hiv-012",
+      "category": "grounded",
+      "question": "What reasonable accommodation may be available to an employee with HIV/AIDS?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "Reasonable accommodation may include flexible or part-time schedules, leaves of absence, work restructuring, or reassignment.",
+      "required_terms": ["flexible", "leaves of absence", "reassignment"],
+      "must_have_sources": true
+    },
+    {
+      "id": "hiv-013",
+      "category": "grounded",
+      "question": "What can happen if an employee discriminates against an HIV-positive colleague?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "Discrimination based on HIV status is not condoned and may subject the employees involved to disciplinary action.",
+      "required_terms": ["discrimination", "disciplinary action"],
+      "must_have_sources": true
+    },
+    {
+      "id": "hiv-014",
+      "category": "grounded",
+      "question": "How should HIV-related grievances be handled?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "HIV/AIDS-related grievances are handled according to the standard policy for employee complaints and grievances.",
+      "required_terms": ["grievances", "standard policy", "complaints"],
+      "must_have_sources": true
+    },
+    {
+      "id": "hiv-015",
+      "category": "grounded",
+      "question": "What is the company's approach to managing HIV/AIDS?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "The company adopts a consultative and transparent approach to managing HIV/AIDS.",
+      "required_terms": ["consultative", "transparent"],
+      "must_have_sources": true
+    },
+    {
+      "id": "substance-001",
+      "category": "grounded",
+      "question": "Can alcohol use at work ever be authorized?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "Alcohol use at work may be authorized for approved social functions or client entertainment, but intoxication or unacceptable behavior is not tolerated.",
+      "required_terms": ["authorized", "social functions", "intoxication"],
+      "must_have_sources": true
+    },
+    {
+      "id": "substance-002",
+      "category": "grounded",
+      "question": "Is intoxication tolerated during an approved company function?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "No. Even when alcohol use is authorized, intoxication and unacceptable behavior are not tolerated.",
+      "required_terms": ["intoxication", "not tolerated"],
+      "must_have_sources": true
+    },
+    {
+      "id": "substance-003",
+      "category": "grounded",
+      "question": "Does illness automatically excuse misconduct or poor performance?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "No. Illness is not an automatic excuse for misconduct or poor performance.",
+      "required_terms": ["not an automatic excuse", "misconduct", "poor performance"],
+      "must_have_sources": true
+    },
+    {
+      "id": "substance-004",
+      "category": "grounded",
+      "question": "Does intoxication normally excuse the dangers caused by substance abuse?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "No. Intoxication is not normally an excuse for causing the dangers described by the policy.",
+      "required_terms": ["intoxication", "not normally an excuse"],
+      "must_have_sources": true
+    },
+    {
+      "id": "substance-005",
+      "category": "grounded",
+      "question": "What responsibility does an ill employee have toward returning to work?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "Ill employees have a responsibility to ensure a speedy return to health and work, follow performance standards, meet deadlines, and maintain proper conduct.",
+      "required_terms": ["speedy return", "performance standards", "deadlines"],
+      "must_have_sources": true
+    },
+    {
+      "id": "substance-006",
+      "category": "grounded",
+      "question": "Are all cases of substance abuse necessarily caused by addiction?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "No. Not all substance abuse is necessarily the result of illness, addiction, or alcoholism.",
+      "required_terms": ["not all substance abuse", "addiction", "alcoholism"],
+      "must_have_sources": true
+    },
+    {
+      "id": "substance-007",
+      "category": "grounded",
+      "question": "What support may the company provide to an employee who is an alcoholic or addict?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "The company will grant normal sick leave for treatment and may consider further assistance where it believes that assistance is merited.",
+      "required_terms": ["sick leave", "treatment", "further assistance"],
+      "must_have_sources": true
+    },
+    {
+      "id": "substance-008",
+      "category": "grounded",
+      "question": "What can happen if treatment or assistance does not solve an alcohol problem?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "The employee may still be subject to incapacity procedures, which could lead to termination if unsuccessful.",
+      "required_terms": ["incapacity procedures", "termination"],
+      "must_have_sources": true
+    },
+    {
+      "id": "substance-009",
+      "category": "grounded",
+      "question": "Can clients be served alcohol at an approved company function?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "Alcohol use may be authorized for approved social functions or entertainment of clients, subject to the policy's conduct requirements.",
+      "required_terms": ["authorized", "social functions", "clients"],
+      "must_have_sources": true
+    },
+    {
+      "id": "substance-010",
+      "category": "grounded",
+      "question": "What may happen when an employee breaches the substance abuse policy?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "Employees who breach the content or spirit of the policy may face disciplinary measures and risk termination of employment.",
+      "required_terms": ["disciplinary measures", "termination"],
+      "must_have_sources": true
+    },
+    {
+      "id": "harassment-001",
+      "category": "grounded",
+      "question": "What standard of treatment is every employee entitled to?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "Every employee is entitled to be treated fairly and with dignity.",
+      "required_terms": ["fairly", "dignity"],
+      "must_have_sources": true
+    },
+    {
+      "id": "harassment-002",
+      "category": "grounded",
+      "question": "Does the policy protect employees from sexual harassment?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "Yes. The policy protects employees against all forms of sexual harassment.",
+      "required_terms": ["protect", "all forms", "sexual harassment"],
+      "must_have_sources": true
+    },
+    {
+      "id": "harassment-003",
+      "category": "grounded",
+      "question": "What workplace values does the sexual harassment policy protect?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "The policy seeks to ensure integrity, dignity, privacy, and the right to equity in the workplace.",
+      "required_terms": ["integrity", "dignity", "privacy", "equity"],
+      "must_have_sources": true
+    },
+    {
+      "id": "harassment-004",
+      "category": "grounded",
+      "question": "Can a client or supplier be involved in a sexual harassment complaint?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "Yes. Clients, suppliers, contractors, and others can be perpetrators or victims under the policy.",
+      "required_terms": ["clients", "suppliers", "perpetrators", "victims"],
+      "must_have_sources": true
+    },
+    {
+      "id": "harassment-005",
+      "category": "grounded",
+      "question": "Does the policy cover unwelcome physical contact?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "Yes. Unwelcome physical contact is listed as an example of sexual harassment.",
+      "required_terms": ["unwelcome physical contact", "sexual harassment"],
+      "must_have_sources": true
+    },
+    {
+      "id": "harassment-006",
+      "category": "grounded",
+      "question": "Are suggestive comments and jokes covered by the harassment policy?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "Yes. Comments, jokes, advances, insults, and other unwelcome conduct are examples covered by the policy.",
+      "required_terms": ["comments", "jokes", "advances"],
+      "must_have_sources": true
+    },
+    {
+      "id": "harassment-007",
+      "category": "grounded",
+      "question": "Does the law protect employees from harassment and unfair discrimination?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "Yes. The policy states that the law protects employees from harassment and unfair discrimination.",
+      "required_terms": ["harassment", "unfair discrimination"],
+      "must_have_sources": true
+    },
+    {
+      "id": "harassment-008",
+      "category": "grounded",
+      "question": "Can a manager be a perpetrator or victim under the sexual harassment policy?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "Yes. Managers and supervisors, along with other workplace parties, may be perpetrators or victims.",
+      "required_terms": ["managers", "supervisors", "perpetrators", "victims"],
+      "must_have_sources": true
+    },
+    {
+      "id": "harassment-009",
+      "category": "grounded",
+      "question": "Is indecent exposure included among examples of sexual harassment?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "Yes. Indecent exposure is listed as an example of conduct covered by the policy.",
+      "required_terms": ["indecent exposure"],
+      "must_have_sources": true
+    },
+    {
+      "id": "harassment-010",
+      "category": "grounded",
+      "question": "Does the policy address references to a person's body?",
+      "expected_behavior": "answer_with_evidence",
+      "reference_answer": "Yes. References to a person's body are included among examples of sexual harassment.",
+      "required_terms": ["references", "person's body"],
+      "must_have_sources": true
+    },
+    {
+      "id": "rewrite-001",
+      "category": "rewrite",
+      "question": "What about HIV?",
+      "expected_behavior": "rewrite_then_answer",
+      "expected_search_query_topics": ["HIV policy", "testing", "confidentiality", "discrimination"],
+      "must_have_sources": true
+    },
+    {
+      "id": "rewrite-002",
+      "category": "rewrite",
+      "question": "Tell me about testing.",
+      "expected_behavior": "rewrite_then_answer",
+      "expected_search_query_topics": ["HIV testing", "pre-employment", "medical examination"],
+      "must_have_sources": true
+    },
+    {
+      "id": "rewrite-003",
+      "category": "rewrite",
+      "question": "What about alcohol?",
+      "expected_behavior": "rewrite_then_answer",
+      "expected_search_query_topics": ["alcohol", "work", "intoxication", "authorized"],
+      "must_have_sources": true
+    },
+    {
+      "id": "rewrite-004",
+      "category": "rewrite",
+      "question": "Harassment policy?",
+      "expected_behavior": "rewrite_then_answer",
+      "expected_search_query_topics": ["sexual harassment", "dignity", "discrimination"],
+      "must_have_sources": true
+    },
+    {
+      "id": "rewrite-005",
+      "category": "rewrite",
+      "question": "And confidentiality?",
+      "expected_behavior": "rewrite_then_answer",
+      "expected_search_query_topics": ["HIV test results", "confidential", "written consent"],
+      "must_have_sources": true
+    },
+    {
+      "id": "rewrite-006",
+      "category": "rewrite",
+      "question": "What happens if someone breaks it?",
+      "expected_behavior": "rewrite_then_answer",
+      "expected_search_query_topics": ["policy breach", "disciplinary action", "termination"],
+      "must_have_sources": true
+    },
+    {
+      "id": "rewrite-007",
+      "category": "rewrite",
+      "question": "Can they be punished?",
+      "expected_behavior": "rewrite_then_answer",
+      "expected_search_query_topics": ["disciplinary action", "HIV", "harassment", "substance abuse"],
+      "must_have_sources": true
+    },
+    {
+      "id": "rewrite-008",
+      "category": "rewrite",
+      "question": "What are the rules here?",
+      "expected_behavior": "rewrite_then_answer",
+      "expected_search_query_topics": ["company policy", "employee conduct", "workplace"],
+      "must_have_sources": true
+    },
+    {
+      "id": "unsupported-001",
+      "category": "unsupported",
+      "question": "What is the company's policy for Mars colonization?",
+      "expected_behavior": "safe_fallback",
+      "reference_answer": "I couldn't find enough information in the provided documents to answer this question.",
+      "must_have_sources": false,
+      "expected_evidence_sufficient": false
+    },
+    {
+      "id": "unsupported-002",
+      "category": "unsupported",
+      "question": "What is the company policy for issuing cryptocurrency to employees?",
+      "expected_behavior": "safe_fallback",
+      "reference_answer": "I couldn't find enough information in the provided documents to answer this question.",
+      "must_have_sources": false,
+      "expected_evidence_sufficient": false
+    },
+    {
+      "id": "unsupported-003",
+      "category": "unsupported",
+      "question": "How many vacation days are granted for a trip to Antarctica?",
+      "expected_behavior": "safe_fallback",
+      "reference_answer": "I couldn't find enough information in the provided documents to answer this question.",
+      "must_have_sources": false,
+      "expected_evidence_sufficient": false
+    },
+    {
+      "id": "unsupported-004",
+      "category": "unsupported",
+      "question": "What is the company's policy for training domestic robots?",
+      "expected_behavior": "safe_fallback",
+      "reference_answer": "I couldn't find enough information in the provided documents to answer this question.",
+      "must_have_sources": false,
+      "expected_evidence_sufficient": false
+    },
+    {
+      "id": "unsupported-005",
+      "category": "unsupported",
+      "question": "Does the company provide employees with private jet benefits?",
+      "expected_behavior": "safe_fallback",
+      "reference_answer": "I couldn't find enough information in the provided documents to answer this question.",
+      "must_have_sources": false,
+      "expected_evidence_sufficient": false
+    },
+    {
+      "id": "unsupported-006",
+      "category": "unsupported",
+      "question": "What is the policy for employees working on time travel research?",
+      "expected_behavior": "safe_fallback",
+      "reference_answer": "I couldn't find enough information in the provided documents to answer this question.",
+      "must_have_sources": false,
+      "expected_evidence_sufficient": false
+    },
+    {
+      "id": "unsupported-007",
+      "category": "unsupported",
+      "question": "How does the company calculate bonuses for lunar mining?",
+      "expected_behavior": "safe_fallback",
+      "reference_answer": "I couldn't find enough information in the provided documents to answer this question.",
+      "must_have_sources": false,
+      "expected_evidence_sufficient": false
+    }
+  ]
+}
