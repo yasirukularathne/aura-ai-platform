@@ -16,20 +16,18 @@ from app.rag.generation.prompt import RAG_PROMPT
 class RAGState(TypedDict, total=False):
 
     question: str
-
     search_query: str
 
-    retrieved_documents: List[Any]
+    security_blocked: bool
 
-    reranked_documents: List[Any]
+    retrieved_documents: list
+    reranked_documents: list
 
     evidence_sufficient: bool
-
     evidence_score: float
 
     answer: str
-
-    citations: List[dict]
+    citations: list
 
     error: str
 
@@ -210,6 +208,39 @@ def safe_response_node(state: RAGState):
         "citations": []
     }
 
+# ============================================================
+# 7. Security node
+# ============================================================
+
+def security_node(state):
+
+    from app.security.input_guard import detect_prompt_injection
+
+    result = detect_prompt_injection(
+        state["question"]
+    )
+
+    if result["blocked"]:
+
+        return {
+            "security_blocked": True,
+            "error": "Potential prompt injection detected."
+        }
+
+    return {
+        "security_blocked": False
+    }
+
+# ============================================================
+# 7. Security router
+# ============================================================
+
+def security_router(state):
+
+    if state.get("security_blocked"):
+        return "blocked"
+
+    return "continue"
 
 # ============================================================
 # 8. BUILD LANGGRAPH
