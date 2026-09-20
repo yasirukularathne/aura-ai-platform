@@ -65,6 +65,45 @@ def retrieve_node(state: RAGState):
         "retrieved_documents": documents
     }
 
+# ============================================================
+# 3. HYBRID RETRIEVE NODE
+# ============================================================
+
+def hybrid_retrieve_node(state):
+
+    # Temporary development implementation.
+    # Later this will use a persistent document index.
+
+    from app.rag.retrieval.retriever import get_retriever
+
+    retriever = get_retriever()
+
+    documents = retriever.invoke(
+        state["search_query"]
+    )
+
+    return {
+        "retrieved_documents": documents
+    }
+# ============================================================
+# 4. RERANK DOCUMENTS
+# ============================================================
+def rerank_node(state):
+
+    from app.rag.reranking.reranker import Reranker
+
+    reranker = Reranker()
+
+    results = reranker.rerank(
+        query=state["search_query"],
+        documents=state["retrieved_documents"],
+        top_k=5
+    )
+
+    return {
+        "reranked_documents": results
+    }
+
 
 # ============================================================
 # 4. CHECK EVIDENCE
