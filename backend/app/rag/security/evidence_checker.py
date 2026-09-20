@@ -22,3 +22,33 @@ def check_evidence(documents):
         "sufficient": True,
         "reason": "Relevant evidence was retrieved."
     }
+
+def check_reranked_evidence(
+    reranked_documents,
+    minimum_score=0.20
+):
+
+    if not reranked_documents:
+
+        return {
+            "sufficient": False,
+            "score": 0.0,
+            "reason": "No relevant evidence was retrieved."
+        }
+
+    best_score = max(
+        item["score"]
+        for item in reranked_documents
+    )
+
+    sufficient = best_score >= minimum_score
+
+    return {
+        "sufficient": sufficient,
+        "score": float(best_score),
+        "reason": (
+            "Relevant evidence found."
+            if sufficient
+            else "Retrieved evidence is not sufficiently relevant."
+        )
+    }
