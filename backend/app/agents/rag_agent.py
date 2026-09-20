@@ -25,6 +25,8 @@ class RAGState(TypedDict, total=False):
 
     evidence_sufficient: bool
 
+    evidence_score: float
+
     answer: str
 
     citations: List[dict]
