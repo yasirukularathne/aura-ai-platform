@@ -5,6 +5,9 @@ from pathlib import Path
 import joblib
 import pandas as pd
 
+from ..explainability.shap_explainer import (
+    ChurnExplainer
+)
 from .risk import (
     calculate_risk
 )
@@ -48,6 +51,15 @@ class ChurnPredictor:
             PREPROCESSOR_PATH
         )
 
+        self.explainer = ChurnExplainer(
+            self.model
+        )
+
+        self.feature_names = (
+            self.preprocessor
+            .get_feature_names_out()
+        )
+
     def predict(
         self,
         customer: dict
@@ -89,8 +101,14 @@ class ChurnPredictor:
             probability >= 0.5
         )
 
+        top_factors = self.explainer.top_factors(
+            processed,
+            self.feature_names
+        )
+
         return {
             "churn_prediction": prediction,
             "churn_probability": float(probability),
             "risk_level": risk_level,
+            "top_factors": top_factors,
         }

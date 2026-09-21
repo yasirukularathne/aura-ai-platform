@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 
 from app.api.rag import router as rag_router
+from app.api.ml import router as ml_router
+
 
 
 app = FastAPI(
@@ -11,6 +13,7 @@ app = FastAPI(
 
 
 app.include_router(rag_router)
+app.include_router(ml_router)
 
 
 @app.get("/")
