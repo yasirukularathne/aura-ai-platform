@@ -535,5 +535,3 @@ LinkedIn: https://www.linkedin.com/in/yasiru-kularathne-79a911213/
 License
 
 This project is currently developed as a personal AI engineering and research project.
-
-License information will be added as the project is prepared for public distribution.
