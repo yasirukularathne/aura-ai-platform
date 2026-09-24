@@ -1,201 +1,525 @@
 # AURA AI Platform
 
-AURA is an evidence-grounded Retrieval-Augmented Generation (RAG) platform for asking questions over an organization's documents. The system parses source files, splits them into retrieval chunks, creates vector embeddings, stores them in Qdrant, retrieves relevant evidence, and sends that context to an LLM for answer generation.
+> An evidence-based, security-aware RAG platform for reliable document question answering using hybrid retrieval, cross-encoder reranking, LangGraph orchestration, and grounded response generation.
 
-The API returns both the generated answer and source metadata so responses can be traced back to the retrieved documents.
+AURA is a modular AI platform designed to explore how modern Retrieval-Augmented Generation (RAG) systems can be built beyond a basic "PDF → embeddings → LLM" pipeline.
 
-## Core Capabilities
+The platform combines semantic retrieval, keyword search, cross-encoder reranking, evidence validation, prompt-injection protection, and agentic orchestration to produce answers grounded in retrieved documents.
 
-- PDF document ingestion with page metadata
-- Recursive document chunking with configurable size and overlap
-- Hugging Face embeddings using `BAAI/bge-small-en-v1.5`
-- Qdrant vector storage and semantic retrieval
-- BM25 keyword retrieval and hybrid retrieval support
-- Query analysis and optional query rewriting
-- Evidence checks and safe fallback responses
-- FastAPI endpoint for document-grounded questions
-- LangGraph-based RAG agent orchestration
+---
 
-## Architecture
+## Overview
+
+Traditional RAG applications often follow a simple pipeline:
 
 ```text
 Documents
-		|
-		v
-PDF Loader -> Chunker -> Embeddings -> Qdrant
-																			|
-User Question -> Query Analysis ------+
-										|
-										v
-						 Semantic / BM25 Retrieval
-										|
-										v
-						 Evidence Validation
-										|
-										v
-							LLM Answer Generation
-										|
-										v
-					Answer + Source Metadata (API)
-```
+    ↓
+Embeddings
+    ↓
+Vector Database
+    ↓
+LLM
+    ↓
+Answer
 
-## Repository Layout
+AURA extends this architecture with multiple retrieval and validation stages:
 
-```text
-backend/
-	app/
-		api/                 FastAPI route modules
-		agents/              LangGraph RAG agent
-		rag/
-			embeddings/        Embedding model configuration
-			generation/        Prompt and LLM integration
-			ingestion/         PDF loading and chunking
-			query/             Query analysis and rewriting
-			retrieval/         Dense, BM25, hybrid, and index helpers
-			security/          Evidence validation
-			vectorstore/       Qdrant integration
-	test_*.py              Pipeline and component checks
-data/
-	documents/             Source documents for ingestion
-	datasets/              Evaluation datasets
-	evaluation/            Evaluation outputs and assets
-docs/                    Project documentation
-frontend/                Frontend application
-notebooks/               Experiments and analysis
-scripts/                 Operational utilities
-```
+                         ┌──────────────────────┐
+                         │      User Query      │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │      FastAPI API     │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │    LangGraph Agent   │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │    Security Gate     │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │    Query Analysis    │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                    ┌───────────────────────────────┐
+                    │       Hybrid Retrieval        │
+                    │                               │
+                    │       Vector Search           │
+                    │              +                │
+                    │          BM25 Search          │
+                    └───────────────┬───────────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │ Cross-Encoder        │
+                         │ Reranking            │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │   Evidence Check     │
+                         └──────────┬───────────┘
+                                    │
+                          ┌─────────┴─────────┐
+                          │                   │
+                          ▼                   ▼
+                  ┌──────────────┐    ┌──────────────┐
+                  │   Generate   │    │ Safe Response│
+                  │   Answer     │    │              │
+                  └──────┬───────┘    └──────┬───────┘
+                         │                   │
+                         └─────────┬─────────┘
+                                   │
+                                   ▼
+                         ┌──────────────────────┐
+                         │     Final Answer     │
+                         └──────────────────────┘
+Key Features
+🔎 Hybrid Retrieval
 
-## Requirements
+AURA combines two retrieval strategies:
 
-- Python 3.11 or newer
-- A virtual environment for the backend
-- A running Qdrant instance at `http://localhost:6333`
-- A Groq API key for answer generation
+Semantic Retrieval
 
-## Local Setup
+Uses vector embeddings with Qdrant to retrieve semantically related content.
 
-From the repository root on Windows PowerShell:
+Current embedding model:
 
-```powershell
-cd backend
-python -m venv venv
-.\venv\Scripts\Activate.ps1
-```
+BAAI/bge-small-en-v1.5
+Keyword Retrieval
 
-Install the backend dependencies used by the application:
+Uses BM25 to identify documents containing relevant lexical terms.
 
-```powershell
-pip install fastapi uvicorn python-dotenv pypdf `
-	langchain langchain-core langchain-community langchain-text-splitters `
-	langchain-huggingface langchain-groq langchain-qdrant qdrant-client `
-	sentence-transformers rank-bm25 langgraph
-```
+The two result sets are combined and deduplicated before reranking.
 
-Create a `.env` file in the repository root:
+User Query
+    │
+    ├──────────────► Vector Search
+    │
+    └──────────────► BM25 Search
+                         │
+                         ▼
+                 Combined Results
+                         │
+                         ▼
+                    Deduplication
 
-```dotenv
-GROQ_API_KEY=your_groq_api_key
-QDRANT_URL=http://localhost:6333
-QDRANT_COLLECTION_NAME=aura_documents
-```
+This allows AURA to benefit from both semantic similarity and exact keyword matching.
 
-Start Qdrant separately, then verify that it is reachable before indexing documents.
+Cross-Encoder Reranking
 
-## Ingest Documents
+Initial retrieval provides candidate documents, but vector similarity alone does not always produce the most relevant ordering.
 
-Place PDFs in `data/documents/`. The current example document is:
+AURA therefore performs a second-stage reranking process using a CrossEncoder.
 
-```text
-data/documents/company_policy.pdf
-```
+Current model:
 
-The ingestion flow is:
+cross-encoder/ms-marco-MiniLM-L-6-v2
 
-```python
-from app.rag.ingestion.chunker import split_documents
-from app.rag.ingestion.pdf_loader import load_pdf
-from app.rag.vectorstore.qdrant_store import create_vector_store
+Pipeline:
 
-documents = load_pdf("data/documents/company_policy.pdf")
-chunks = split_documents(documents)
-create_vector_store(chunks)
-```
+Query
+  ↓
+Hybrid Retrieval
+  ↓
+Candidate Documents
+  ↓
+CrossEncoder
+  ↓
+Relevance Scores
+  ↓
+Top-K Documents
 
-Run scripts from `backend` so the `app` package is importable:
+The reranker scores query-document pairs and sorts the retrieved evidence according to relevance.
 
-```powershell
-cd backend
-python test_ingestion.py
-```
+Evidence-Based Generation
 
-## Run the API
+AURA does not directly send every retrieved result to the LLM.
 
-From the `backend` directory:
+Before generation, the system evaluates the reranked evidence.
 
-```powershell
-uvicorn app.main:app --reload
-```
+Current evidence threshold:
 
-The API is available at `http://127.0.0.1:8000`.
+minimum score = 0.20
 
-Health check:
+Conceptually:
 
-```http
-GET /health
-```
+Retrieved Evidence
+       │
+       ▼
+Best Relevance Score
+       │
+       ├── Score ≥ threshold
+       │        │
+       │        ▼
+       │   Generate Answer
+       │
+       └── Score < threshold
+                │
+                ▼
+          Safe Response
 
-Ask a question:
+If sufficient evidence is not available, the system can return a safe fallback instead of generating an unsupported answer.
 
-```http
+This provides an additional control against unsupported responses.
+
+AI Security
+
+AURA includes an input security layer designed to detect prompt-injection patterns before the query continues through the RAG pipeline.
+
+User Query
+    │
+    ▼
+Security Detection
+    │
+    ├── Safe
+    │    ↓
+    │  Continue RAG Pipeline
+    │
+    └── Suspicious
+         ↓
+      Safe Response
+
+This prevents detected malicious instructions from being passed directly through the normal retrieval and generation workflow.
+
+LangGraph Agent Architecture
+
+The RAG workflow is implemented using LangGraph.
+
+Current graph:
+
+START
+  │
+  ▼
+Security
+  │
+  ├──────────────► Safe Response
+  │
+  ▼
+Query Analysis
+  │
+  ▼
+Hybrid Retrieval
+  │
+  ▼
+Reranking
+  │
+  ▼
+Evidence Check
+  │
+  ├──────────────► Safe Response
+  │
+  ▼
+Generation
+  │
+  ▼
+END
+
+This makes each stage explicit and allows conditional routing based on security and evidence state.
+
+Model Lifecycle Optimization
+
+Machine-learning models can be expensive to initialize.
+
+AURA therefore caches the embedding and reranking models using Python's lru_cache.
+
+Embedding Model
+@lru_cache(maxsize=1)
+def get_embedding_model():
+    ...
+Reranker Model
+@lru_cache(maxsize=1)
+def get_reranker_model():
+    ...
+
+This ensures repeated requests within the same Python process reuse the loaded models instead of repeatedly initializing them.
+
+Both caching mechanisms have been verified using instance-identity tests.
+
+Technology Stack
+Backend
+Python
+FastAPI
+LangChain
+LangGraph
+Retrieval
+Qdrant
+BM25
+Hugging Face Embeddings
+Sentence Transformers
+CrossEncoder
+AI / ML
+Hugging Face
+Groq
+PyTorch
+scikit-learn
+Infrastructure
+Docker
+Docker Compose
+Qdrant
+Testing
+Pytest
+Project Structure
+aura-ai-platform/
+│
+├── backend/
+│   │
+│   ├── app/
+│   │   │
+│   │   ├── agents/
+│   │   │   └── rag_agent.py
+│   │   │
+│   │   ├── api/
+│   │   │   └── rag.py
+│   │   │
+│   │   ├── rag/
+│   │   │   │
+│   │   │   ├── embeddings/
+│   │   │   │   └── embedding_model.py
+│   │   │   │
+│   │   │   ├── ingestion/
+│   │   │   │   └── pdf_loader.py
+│   │   │   │
+│   │   │   ├── retrieval/
+│   │   │   │   ├── retriever.py
+│   │   │   │   ├── bm25_retriever.py
+│   │   │   │   └── hybrid.py
+│   │   │   │
+│   │   │   ├── reranking/
+│   │   │   │   └── reranker.py
+│   │   │   │
+│   │   │   └── vectorstore/
+│   │   │       └── qdrant_store.py
+│   │   │
+│   │   ├── security/
+│   │   │   └── input_guard.py
+│   │   │
+│   │   └── config.py
+│   │
+│   ├── tests/
+│   │   ├── test_rag.py
+│   │   ├── test_security.py
+│   │   └── test_evaluation.py
+│   │
+│   └── requirements.txt
+│
+├── docker-compose.yml
+├── .env.example
+└── README.md
+RAG Pipeline
+
+The complete request lifecycle is:
+
 POST /api/rag/ask
-Content-Type: application/json
+        │
+        ▼
+   Input Validation
+        │
+        ▼
+   Security Detection
+        │
+        ▼
+    Query Analysis
+        │
+        ▼
+ ┌──────┴───────┐
+ │              │
+ ▼              ▼
+Vector          BM25
+Search          Search
+ │              │
+ └──────┬───────┘
+        │
+        ▼
+  Result Fusion
+        │
+        ▼
+   CrossEncoder
+    Reranking
+        │
+        ▼
+ Evidence Check
+        │
+   ┌────┴────┐
+   │         │
+   ▼         ▼
+Generate    Safe
+Answer     Response
+API
+Ask a Question
+POST /api/rag/ask
+
+Example request:
 
 {
-	"question": "What is the refund policy?"
+  "question": "What is the notice period for managers and supervisors?"
 }
-```
 
-Example response:
+Example response structure:
 
-```json
 {
-  "answer": "...",
+  "answer": "The notice period is ...",
   "sources": [
     {
-      "source": "data/documents/company_policy.pdf",
-      "page": 2
+      "source": "company_policy.pdf",
+      "page": 30
     }
   ]
 }
-```
 
-Interactive API documentation is available at `http://127.0.0.1:8000/docs`.
+The exact response fields may evolve as the API continues to be hardened.
 
-## Testing
+Running Locally
+1. Clone the Repository
+git clone https://github.com/yasirukularathne/aura-ai-platform.git
+cd aura-ai-platform
+2. Create a Virtual Environment
 
-Install the test runner in the active virtual environment:
+Windows:
 
-```powershell
-pip install pytest
-```
+python -m venv backend/venv
 
-Run the backend tests:
+Activate:
 
-```powershell
+backend\venv\Scripts\activate
+3. Install Dependencies
 cd backend
-python -m pytest -q
+pip install -r requirements.txt
+4. Configure Environment Variables
+
+Create:
+
+.env
+
+Example:
+
+GROQ_API_KEY=your_api_key
+
+QDRANT_URL=http://localhost:6333
+
+QDRANT_COLLECTION_NAME=aura_documents
+
+Do not commit .env to version control.
+
+Start Qdrant
+
+From the project root:
+
+docker compose up -d
+
+Qdrant will be available at:
+
+http://localhost:6333
+Start the Backend
+
+From:
+
+backend/
+
+run:
+
+uvicorn app.main:app --reload
+
+The API will be available through the configured FastAPI server.
+
+Testing
+
+AURA uses Pytest for automated testing.
+
+Run:
+
+pytest -q
+
+Current verified test status:
+
+9 passed
+
+The test suite covers the implemented RAG, security, and evaluation functionality.
+
+The current test run also reports a deprecation warning related to the langchain-community PDF loader dependency. This is tracked as technical debt rather than a test failure.
+
+Engineering Principles
+
+AURA is being developed around several engineering principles.
+
+1. Grounded Generation
+
+The system should prefer retrieved evidence over unsupported model knowledge.
+
+2. Defense in Depth
+
+Security and evidence validation are separate controls.
+
+Input Security
+      +
+Retrieval
+      +
+Reranking
+      +
+Evidence Validation
+      +
+Grounded Generation
+3. Modular Architecture
+
+Major components are separated into independent modules so they can be tested and replaced independently.
+
+4. Explicit Agent Workflow
+
+LangGraph is used to represent the RAG workflow as explicit nodes and conditional transitions.
+
+5. Performance Awareness
+
+Expensive ML models are cached and reused within the application process.
+
+6. Test Before Refactoring
+
+Changes to the RAG architecture are validated using automated tests before being merged.
 ```
 
-Tests are designed to cover ingestion, retrieval, generation, evidence checks, and agent orchestration. Tests that exercise external services should use mocks or a local service configuration.
+Why AURA?
 
-## Development Notes
+AURA is designed as an engineering-focused exploration of modern AI application architecture.
 
-- Run Python commands from `backend` or use the backend interpreter explicitly.
-- Do not commit `.env` files or API keys.
-- Keep source metadata attached to every document chunk so answers remain traceable.
-- Validate retrieved evidence before allowing an answer to be generated.
-- Use dependency injection in tests to avoid requiring Qdrant or an LLM provider.
+Rather than treating an LLM as the entire system, the platform separates:
 
-## Status
+Retrieval +
+Ranking +
+Security +
+Evidence Validation +
+Generation +
+Agent Orchestration
 
-The core RAG backend and API foundation are implemented. Frontend integration, production deployment configuration, automated evaluation, and observability remain areas for continued development.
+This architecture makes it possible to independently evaluate and improve different stages of an AI application.
+
+Author
+
+Yasiru Kularathne
+
+Computer Engineering graduate
+University of Ruhuna, Sri Lanka
+
+Areas of Interest
+Artificial Intelligence
+Machine Learning
+Generative AI
+Retrieval-Augmented Generation
+AI Agents
+Natural Language Processing
+Backend Engineering
+Links
+GitHub: https://github.com/yasirukularathne
+LinkedIn: https://www.linkedin.com/in/yasiru-kularathne-79a911213/
+License
+
+This project is currently developed as a personal AI engineering and research project.
+
+License information will be added as the project is prepared for public distribution.
