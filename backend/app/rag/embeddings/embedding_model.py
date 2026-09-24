@@ -1,10 +1,10 @@
+from functools import lru_cache
+
 from langchain_huggingface import HuggingFaceEmbeddings
 
 
+@lru_cache(maxsize=1)
 def get_embedding_model():
-
-    embeddings = HuggingFaceEmbeddings(
+    return HuggingFaceEmbeddings(
         model_name="BAAI/bge-small-en-v1.5"
     )
-
-    return embeddings
