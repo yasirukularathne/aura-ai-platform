@@ -1,11 +1,7 @@
-"""Application security guards for the RAG API."""# app/security/__init__.py
+"""Application security guards for the RAG API."""
 
-from .input_guard import (
-    detect_prompt_injection,
-    validate_query,
-)
+from .input_guard import detect_prompt_injection
 
 __all__ = [
     "detect_prompt_injection",
-    "validate_query",
 ]

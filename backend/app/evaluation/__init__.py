@@ -8,10 +8,12 @@ from .retrieval_metrics import (
     recall_at_k,
     reciprocal_rank,
 )
+from .runner import evaluate_configuration
 
 __all__ = [
     "EVALUATION_PROMPT",
     "evaluate_answer",
+    "evaluate_configuration",
     "hit_rate",
     "load_evaluation_dataset",
     "mean_reciprocal_rank",

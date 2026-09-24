@@ -4,7 +4,6 @@ __pycache__/
 venv/
 .env
 
-
 # IDE
 .vscode/
 .idea/
@@ -12,6 +11,9 @@ venv/
 # Data
 data/documents/*
 data/datasets/*
+
+# Model artifacts
+models/
 
 # OS
 .DS_Store
