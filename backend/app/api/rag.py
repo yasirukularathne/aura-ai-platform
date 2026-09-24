@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from app.rag.generation.rag_chain import ask_question
+from app.agents.rag_agent import rag_graph
 
 
 router = APIRouter(
@@ -17,6 +17,6 @@ class QuestionRequest(BaseModel):
 @router.post("/ask")
 def ask(request: QuestionRequest):
 
-    result = ask_question(request.question)
+    result = rag_graph.invoke({"question": request.question})
 
     return result
