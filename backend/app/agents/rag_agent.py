@@ -69,20 +69,31 @@ def retrieve_node(state: RAGState):
 
 def hybrid_retrieve_node(state):
 
-    # Temporary development implementation.
-    # Later this will use a persistent document index.
+    from pathlib import Path
 
-    from app.rag.retrieval.retriever import get_retriever
+    from app.rag.retrieval.document_index import load_and_chunk_document
+    from app.rag.retrieval.hybrid_retriever import HybridRetriever
 
-    retriever = get_retriever()
+    pdf_path = (
+        Path(__file__).resolve().parents[3]
+        / "data"
+        / "documents"
+        / "company_policy.pdf"
+    )
 
-    documents = retriever.invoke(
-        state["search_query"]
+    documents = load_and_chunk_document(str(pdf_path))
+
+    retriever = HybridRetriever(documents)
+
+    retrieved_documents = retriever.retrieve(
+        state["search_query"],
+        k=5
     )
 
     return {
-        "retrieved_documents": documents
+        "retrieved_documents": retrieved_documents
     }
+
 # ============================================================
 # 4. RERANK DOCUMENTS
 # ============================================================
@@ -251,6 +262,11 @@ def build_rag_graph():
     graph = StateGraph(RAGState)
 
     graph.add_node(
+        "security",
+        security_node
+    )
+
+    graph.add_node(
         "analyze",
         analyze_node
     )
@@ -282,7 +298,16 @@ def build_rag_graph():
 
     graph.add_edge(
         START,
-        "analyze"
+        "security"
+    )
+
+    graph.add_conditional_edges(
+        "security",
+        security_router,
+        {
+            "continue": "analyze",
+            "blocked": "safe_response"
+        }
     )
 
     graph.add_edge(
