@@ -500,6 +500,20 @@ Agent Orchestration
 
 This architecture makes it possible to independently evaluate and improve different stages of an AI application.
 
+Project Goals
+
+The main goals of AURA are to explore and demonstrate:
+
+Modern RAG architecture
+Hybrid information retrieval
+Neural reranking
+Agentic AI workflows
+AI application security
+Evidence-grounded generation
+Model lifecycle optimization
+Automated evaluation
+Production-oriented AI engineering
+
 Author
 
 Yasiru Kularathne
