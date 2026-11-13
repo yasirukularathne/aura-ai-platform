@@ -2,11 +2,9 @@
 import importlib
 
 import pytest
-from fastapi.testclient import TestClient
-
 from app.main import app
 from app.workspace_store import WorkspaceStore
-
+from fastapi.testclient import TestClient
 
 client = TestClient(app)
 

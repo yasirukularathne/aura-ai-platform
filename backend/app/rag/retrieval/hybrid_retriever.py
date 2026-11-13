@@ -1,6 +1,4 @@
 
-from langchain_core.documents import Document
-
 from app.rag.retrieval.bm25_retriever import BM25Retriever
 from app.rag.retrieval.retriever import (
     _normalize_scope_id,
@@ -8,6 +6,7 @@ from app.rag.retrieval.retriever import (
     get_retriever,
     load_indexed_documents,
 )
+from langchain_core.documents import Document
 
 
 class HybridRetriever:

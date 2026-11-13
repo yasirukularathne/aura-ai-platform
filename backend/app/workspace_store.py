@@ -3,11 +3,10 @@ from pathlib import Path
 from uuid import uuid4
 
 import psycopg
-from psycopg.rows import dict_row
-
 from app.config import settings
 from app.database import ensure_postgres_schema
 from app.migrations import apply_migrations
+from psycopg.rows import dict_row
 
 
 class WorkspaceStore:
