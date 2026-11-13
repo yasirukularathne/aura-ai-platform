@@ -7,12 +7,13 @@ class RAGResponse(BaseModel):
         min_length=1
     )
 
-    citations: list[dict] = []
+    citations: list[dict] = Field(default_factory=list)
 
     confidence: float = Field(
         ge=0.0,
         le=1.0
     )
+
 
 
 def validate_output(

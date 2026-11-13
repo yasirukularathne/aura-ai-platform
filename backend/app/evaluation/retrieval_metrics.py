@@ -75,6 +75,18 @@ def recall_at_k(
     return 0.0
 
 
+def precision_at_k(
+    retrieved_documents: Sequence[Any],
+    expected_document: str,
+    expected_page: Any,
+    k: int = 5,
+) -> float:
+    """Return the proportion of top-k results matching the expected passage."""
+    if k < 1:
+        raise ValueError("k must be at least 1")
+    return recall_at_k(retrieved_documents, expected_document, expected_page, k) / k
+
+
 def hit_rate(results: Sequence[float | int | bool]) -> float:
     """Return the proportion of queries that produced a retrieval hit."""
     if not results:

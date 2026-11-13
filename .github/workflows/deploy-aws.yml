@@ -1,0 +1,49 @@
+name: Deploy AURA to AWS ECS
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+  ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+  ECS_SERVICE: ${{ vars.ECS_SERVICE }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: aws-actions/amazon-ecr-login@v2
+        id: ecr
+      - name: Build and push image
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+        run: |
+          IMAGE="$REGISTRY/$ECR_REPOSITORY:${GITHUB_SHA}"
+          docker build -t "$IMAGE" ./backend
+          docker push "$IMAGE"
+          echo "ECR_IMAGE=$IMAGE" >> "$GITHUB_ENV"
+      - name: Render ECS task definition
+        run: |
+          sed "s|\${ECR_IMAGE}|${ECR_IMAGE}|g" \
+            infrastructure/aws/ecs-task-definition.json > task-definition.json
+      - name: Deploy ECS service
+        run: |
+          aws ecs register-task-definition \
+            --cli-input-json file://task-definition.json > task.json
+          REVISION=$(jq -r '.taskDefinition.taskDefinitionArn' task.json)
+          aws ecs update-service \
+            --cluster "$ECS_CLUSTER" \
+            --service "$ECS_SERVICE" \
+            --task-definition "$REVISION" \
+            --force-new-deployment

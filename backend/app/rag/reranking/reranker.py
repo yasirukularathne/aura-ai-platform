@@ -31,7 +31,7 @@ class Reranker:
         scores = self.model.predict(pairs)
 
         ranked = sorted(
-            zip(documents, scores),
+            zip(documents, scores, strict=True),
             key=lambda item: item[1],
             reverse=True
         )

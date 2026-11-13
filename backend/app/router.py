@@ -1,6 +1,5 @@
-from app.agents.rag_agent import rag_graph
 from app.agents.ml_agent import ml_graph
-
+from app.agents.rag_agent import rag_graph
 
 # ============================================================
 # ROUTER

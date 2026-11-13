@@ -1,10 +1,6 @@
-from fastapi import APIRouter
+from app.ml.prediction.predictor import ChurnPredictor
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-
-from app.ml.prediction.predictor import (
-    ChurnPredictor
-)
-
 
 router = APIRouter(
 
@@ -17,7 +13,10 @@ router = APIRouter(
 )
 
 
-predictor = ChurnPredictor()
+try:
+    predictor = ChurnPredictor()
+except (FileNotFoundError, OSError, ValueError):
+    predictor = None
 
 
 class ChurnRequest(
@@ -33,6 +32,11 @@ class ChurnRequest(
 def predict_churn(
     request: ChurnRequest
 ):
+    if predictor is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Churn prediction model is not available",
+        )
 
     return predictor.predict(
         request.customer

@@ -2,10 +2,8 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
-
 from app.evaluation import evaluate_configuration, recall_at_k, reciprocal_rank
 from app.evaluation.dataset import load_evaluation_dataset
-
 
 DATASET_PATH = (
     Path(__file__).resolve().parents[1] / "data" / "evaluation" / "rag_eval.json"
