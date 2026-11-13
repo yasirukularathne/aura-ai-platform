@@ -1,7 +1,5 @@
-from langchain_core.prompts import ChatPromptTemplate
-
 from app.rag.generation.llm import get_llm
-
+from langchain_core.prompts import ChatPromptTemplate
 
 REWRITE_PROMPT = ChatPromptTemplate.from_template("""
 Rewrite the user's question into a clear search query.

@@ -9,14 +9,15 @@ from pathlib import Path
 from typing import Any
 
 from .answer_metrics import evaluate_answer
+from .citation_metrics import citation_correct
 from .dataset import load_evaluation_dataset
 from .retrieval_metrics import (
 	hit_rate,
 	mean_reciprocal_rank,
+	precision_at_k,
 	recall_at_k,
 	reciprocal_rank,
 )
-
 
 RAGConfiguration = Callable[[str], dict[str, Any]]
 
@@ -131,6 +132,11 @@ def _expected_case_metrics(
 		metrics["source_expectation_met"] = (
 			has_sources == bool(case["must_have_sources"])
 		)
+	if "expected_citation" in case:
+		metrics["citation_correctness"] = citation_correct(
+			_source_items(result),
+			case["expected_citation"],
+		)
 
 	expected_topics = _as_list(case.get("expected_search_query_topics"))
 	if expected_topics:
@@ -213,11 +219,18 @@ def evaluate_configuration(
 
 		if expected_document is not None:
 			recall = recall_at_k(documents, expected_document, expected_page, k)
+			precision = precision_at_k(
+				documents,
+				expected_document,
+				expected_page,
+				k,
+			)
 			rank = reciprocal_rank(documents, expected_document, expected_page)
 			hits.append(recall)
 			ranks.append(rank)
 		else:
 			recall = None
+			precision = None
 			rank = None
 
 		answer = str(result.get("answer", ""))
@@ -237,6 +250,7 @@ def evaluate_configuration(
 				"retrieval_method": name,
 				"recall_at_k": recall,
 				recall_key: recall,
+				"precision_at_k": precision,
 				"reciprocal_rank": rank,
 				"retrieval_latency_ms": result.get("retrieval_latency_ms"),
 				"reranking_latency_ms": result.get("reranking_latency_ms"),
@@ -255,6 +269,9 @@ def evaluate_configuration(
 		"retrieval_evaluated_cases": len(hits),
 		"recall_at_k": hit_rate_score,
 		recall_key: hit_rate_score,
+		"precision_at_k": _average(
+			[result.get("precision_at_k") for result in results]
+		),
 		"hit_rate": hit_rate_score,
 		"mrr": mean_reciprocal_rank(ranks) if ranks else None,
 		"faithfulness": _average(
@@ -277,6 +294,9 @@ def evaluate_configuration(
 		),
 		"safe_fallback_accuracy": _average(
 			[result.get("safe_fallback_met") for result in results]
+		),
+		"citation_correctness": _average(
+			[result.get("citation_correctness") for result in results]
 		),
 		"results": results,
 	}

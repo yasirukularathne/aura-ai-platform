@@ -1,28 +1,23 @@
 from pathlib import Path
 
 import joblib
-
-from sklearn.model_selection import train_test_split
-
+from app.ml.preprocessing.preprocess import (
+    clean_data,
+    create_preprocessor,
+    load_data,
+    prepare_features,
+)
 from sklearn.metrics import (
     accuracy_score,
+    classification_report,
+    confusion_matrix,
+    f1_score,
     precision_score,
     recall_score,
-    f1_score,
     roc_auc_score,
-    classification_report,
-    confusion_matrix
 )
-
+from sklearn.model_selection import train_test_split
 from xgboost import XGBClassifier
-
-from app.ml.preprocessing.preprocess import (
-    load_data,
-    clean_data,
-    prepare_features,
-    create_preprocessor
-)
-
 
 # =========================================================
 # PATHS

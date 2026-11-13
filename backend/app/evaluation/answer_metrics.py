@@ -4,7 +4,6 @@ import json
 import re
 from typing import Any
 
-
 EVALUATION_PROMPT = """
 Evaluate the following RAG answer.
 

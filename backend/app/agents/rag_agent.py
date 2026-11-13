@@ -1,104 +1,79 @@
-from typing import TypedDict, List, Any
+import logging
+from typing import TypedDict
 
-from langgraph.graph import StateGraph, START, END
-
-from app.rag.query.query_processor import process_query
-from app.rag.retrieval.retriever import get_retriever
-from app.rag.security.evidence_checker import check_evidence
 from app.rag.generation.llm import get_llm
 from app.rag.generation.prompt import RAG_PROMPT
+from app.rag.query.query_processor import process_query
+from langgraph.graph import END, START, StateGraph
+from pydantic import BaseModel, ConfigDict, Field
+
+logger = logging.getLogger(__name__)
+
+SAFE_RESPONSE = (
+    "I couldn't find enough information in the "
+    "provided documents to answer this question."
+)
 
 
-# ============================================================
-# 1. RAG STATE
-# ============================================================
+class RAGAssessment(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    evidence_sufficient: bool = Field(
+        description=(
+            "True only when the provided context contains enough "
+            "explicit information to answer the question."
+        )
+    )
+    reason: str = Field(
+        description="Brief explanation of the evidence assessment."
+    )
+    answer: str = Field(
+        description=(
+            "A concise answer based exclusively on the provided context. "
+            "If evidence is insufficient, return an abstention."
+        )
+    )
+
 
 class RAGState(TypedDict, total=False):
-
     question: str
     search_query: str
-
+    tenant_id: str
+    workspace_id: str | None
     security_blocked: bool
-
     retrieved_documents: list
     reranked_documents: list
-
+    retrieval_sufficient: bool
     evidence_sufficient: bool
     evidence_score: float
-
+    evidence_reason: str
     answer: str
     citations: list
+    error: str | None
 
-    error: str
-
-
-# ============================================================
-# 2. ANALYZE QUESTION
-# ============================================================
 
 def analyze_node(state: RAGState):
-
-    result = process_query(
-        state["question"]
-    )
-
-    return {
-        "search_query": result["search_query"]
-    }
+    result = process_query(state["question"])
+    return {"search_query": result["search_query"]}
 
 
-# ============================================================
-# 3. RETRIEVE DOCUMENTS
-# ============================================================
-
-def retrieve_node(state: RAGState):
-
-    retriever = get_retriever()
-
-    documents = retriever.invoke(
-        state["search_query"]
-    )
-
-    return {
-        "retrieved_documents": documents
-    }
-
-# ============================================================
-# 3. HYBRID RETRIEVE NODE
-# ============================================================
-
-def hybrid_retrieve_node(state):
-
-    from pathlib import Path
-
-    from app.rag.retrieval.document_index import load_and_chunk_document
+def hybrid_retrieve_node(state: RAGState):
     from app.rag.retrieval.hybrid_retriever import HybridRetriever
 
-    pdf_path = (
-        Path(__file__).resolve().parents[3]
-        / "data"
-        / "documents"
-        / "company_policy.pdf"
-    )
-
-    documents = load_and_chunk_document(str(pdf_path))
-
-    retriever = HybridRetriever(documents)
-
-    retrieved_documents = retriever.retrieve(
-        state["search_query"],
-        k=5
+    retriever = HybridRetriever(
+        tenant_id=state.get("tenant_id"),
+        workspace_id=state.get("workspace_id"),
     )
 
     return {
-        "retrieved_documents": retrieved_documents
+        "retrieved_documents": retriever.retrieve(
+            state["search_query"],
+            k=5,
+        )
     }
 
-# ============================================================
-# 4. RERANK DOCUMENTS
-# ============================================================
-def rerank_node(state):
 
+def rerank_node(state: RAGState):
     from app.rag.reranking.reranker import Reranker
 
     reranker = Reranker()
@@ -106,249 +81,176 @@ def rerank_node(state):
     results = reranker.rerank(
         query=state["search_query"],
         documents=state["retrieved_documents"],
-        top_k=5
+        top_k=5,
     )
 
-    return {
-        "reranked_documents": results
-    }
+    return {"reranked_documents": results}
 
-
-# ============================================================
-# 4. CHECK EVIDENCE
-# ============================================================
 
 def evidence_node(state: RAGState):
-
-    result = check_evidence(
-        state["retrieved_documents"]
-    )
-
-    return {
-        "evidence_sufficient": result["sufficient"],
-        "error": (
-            result["reason"]
-            if not result["sufficient"]
-            else ""
-        )
-    }
-
-
-def evidence_node(state):
-
-    from app.rag.security.evidence_checker import (
-        check_reranked_evidence
-    )
+    from app.rag.security.evidence_checker import check_reranked_evidence
 
     result = check_reranked_evidence(
-        state["reranked_documents"]
+        state.get("reranked_documents", [])
     )
 
     return {
-        "evidence_sufficient": result["sufficient"],
+        "retrieval_sufficient": result["sufficient"],
         "evidence_score": result["score"],
-        "error": result["reason"]
+        "evidence_reason": result["reason"],
+        "error": None if result["sufficient"] else result["reason"],
     }
 
 
-# ============================================================
-# 5. ROUTER
-# ============================================================
-
 def evidence_router(state: RAGState):
-
-    if state.get("evidence_sufficient"):
-        return "generate"
+    if state.get("retrieval_sufficient"):
+        return "assess"
 
     return "safe_response"
 
 
-# ============================================================
-# 6. GENERATE ANSWER
-# ============================================================
-
-def generate_node(state):
-
-    from app.rag.generation.llm import get_llm
-    from app.rag.generation.prompt import RAG_PROMPT
-
+def assess_and_generate_node(state: RAGState):
     documents = [
         item["document"]
-        for item in state["reranked_documents"]
+        for item in state.get("reranked_documents", [])
     ]
 
     context = "\n\n".join(
         document.page_content
         for document in documents
+        if document.page_content.strip()
     )
 
-    prompt = RAG_PROMPT.format(
-        context=context,
-        question=state["question"]
-    )
+    try:
+        prompt = RAG_PROMPT.format(
+            context=context,
+            question=state["question"],
+        )
 
-    llm = get_llm()
+        structured_llm = get_llm().with_structured_output(
+            RAGAssessment,
+            method="json_schema",
+            strict=True,
+        )
 
-    response = llm.invoke(prompt)
+        assessment = structured_llm.invoke(prompt)
 
-    citations = [
-        {
-            "document": document.metadata.get("source"),
-            "page": document.metadata.get("page"),
-        }
-        for document in documents
-    ]
+        if (
+            not assessment.evidence_sufficient
+            or not assessment.answer.strip()
+        ):
+            reason = assessment.reason or (
+                "The provided documents do not contain enough "
+                "information to answer this question."
+            )
 
-    return {
-        "answer": response.content,
-        "citations": citations
-    }
+            return {
+                "evidence_sufficient": False,
+                "evidence_reason": reason,
+                "answer": SAFE_RESPONSE,
+                "citations": [],
+                "error": reason,
+            }
 
-
-# ============================================================
-# 7. SAFE RESPONSE
-# ============================================================
-
-def safe_response_node(state: RAGState):
-
-    return {
-        "answer": (
-            "I couldn't find enough information in the "
-            "provided documents to answer this question."
-        ),
-        "citations": []
-    }
-
-# ============================================================
-# 7. Security node
-# ============================================================
-
-def security_node(state):
-
-    from app.security.input_guard import detect_prompt_injection
-
-    result = detect_prompt_injection(
-        state["question"]
-    )
-
-    if result["blocked"]:
+        citations = [
+            {
+                "document": document.metadata.get("source"),
+                "page": document.metadata.get("page"),
+            }
+            for document in documents
+        ]
 
         return {
-            "security_blocked": True,
-            "error": "Potential prompt injection detected."
+            "evidence_sufficient": True,
+            "evidence_reason": assessment.reason,
+            "answer": assessment.answer,
+            "citations": citations,
+            "error": None,
         }
 
+    except Exception:
+        logger.exception("RAG evidence assessment or generation failed")
+
+        return {
+            "evidence_sufficient": False,
+            "evidence_reason": (
+                "Evidence assessment failed. The answer could not "
+                "be verified."
+            ),
+            "answer": SAFE_RESPONSE,
+            "citations": [],
+            "error": "Evidence assessment failed; unable to verify an answer.",
+        }
+
+
+def safe_response_node(_state: RAGState):
     return {
-        "security_blocked": False
+        "evidence_sufficient": False,
+        "answer": SAFE_RESPONSE,
+        "citations": [],
     }
 
-# ============================================================
-# 7. Security router
-# ============================================================
 
-def security_router(state):
+def security_node(state: RAGState):
+    from app.security.input_guard import detect_prompt_injection
 
+    result = detect_prompt_injection(state["question"])
+
+    if result["blocked"]:
+        return {
+            "security_blocked": True,
+            "error": "Potential prompt injection detected.",
+        }
+
+    return {"security_blocked": False}
+
+
+def security_router(state: RAGState):
     if state.get("security_blocked"):
         return "blocked"
 
     return "continue"
 
-# ============================================================
-# 8. BUILD LANGGRAPH
-# ============================================================
 
 def build_rag_graph():
-
     graph = StateGraph(RAGState)
 
-    graph.add_node(
-        "security",
-        security_node
-    )
+    graph.add_node("security", security_node)
+    graph.add_node("analyze", analyze_node)
+    graph.add_node("retrieve", hybrid_retrieve_node)
+    graph.add_node("rerank", rerank_node)
+    graph.add_node("evidence_check", evidence_node)
+    graph.add_node("assess_and_generate", assess_and_generate_node)
+    graph.add_node("safe_response", safe_response_node)
 
-    graph.add_node(
-        "analyze",
-        analyze_node
-    )
-
-    graph.add_node(
-        "retrieve",
-        hybrid_retrieve_node
-    )
-
-    graph.add_node(
-        "rerank",
-        rerank_node
-    )
-
-    graph.add_node(
-        "evidence_check",
-        evidence_node
-    )
-
-    graph.add_node(
-        "generate",
-        generate_node
-    )
-
-    graph.add_node(
-        "safe_response",
-        safe_response_node
-    )
-
-    graph.add_edge(
-        START,
-        "security"
-    )
+    graph.add_edge(START, "security")
 
     graph.add_conditional_edges(
         "security",
         security_router,
         {
             "continue": "analyze",
-            "blocked": "safe_response"
-        }
+            "blocked": "safe_response",
+        },
     )
 
-    graph.add_edge(
-        "analyze",
-        "retrieve"
-    )
-
-    graph.add_edge(
-        "retrieve",
-        "rerank"
-    )
-
-    graph.add_edge(
-        "rerank",
-        "evidence_check"
-    )
+    graph.add_edge("analyze", "retrieve")
+    graph.add_edge("retrieve", "rerank")
+    graph.add_edge("rerank", "evidence_check")
 
     graph.add_conditional_edges(
         "evidence_check",
         evidence_router,
         {
-            "generate": "generate",
-            "safe_response": "safe_response"
-        }
+            "assess": "assess_and_generate",
+            "safe_response": "safe_response",
+        },
     )
 
-    graph.add_edge(
-        "generate",
-        END
-    )
-
-    graph.add_edge(
-        "safe_response",
-        END
-    )
+    graph.add_edge("assess_and_generate", END)
+    graph.add_edge("safe_response", END)
 
     return graph.compile()
 
-
-# ============================================================
-# 9. COMPILE GRAPH
-# ============================================================
 
 rag_graph = build_rag_graph()

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AURA AI Platform</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="header">
+        <div>
+          <p class="eyebrow">AURA AI PLATFORM</p>
+          <h1>Operations dashboard</h1>
+          <p class="muted">Upload policy documents and monitor ingestion jobs.</p>
+        </div>
+        <span id="api-status" class="status status-neutral">API unknown</span>
+      </header>
+
+      <section class="grid">
+        <article class="card">
+          <h2>Connection</h2>
+          <label for="api-url">API URL</label>
+          <input id="api-url" value="http://localhost:8000" />
+          <label for="api-key">API key</label>
+          <input id="api-key" type="password" placeholder="X-API-Key" />
+          <button id="save-settings" class="secondary">Save connection</button>
+        </article>
+
+        <article class="card">
+          <h2>Upload document</h2>
+          <p class="muted">PDF, DOCX, TXT, Markdown, and CSV files are supported.</p>
+          <input id="document-file" type="file" accept=".pdf,.docx,.txt,.md,.markdown,.csv" />
+          <label for="workspace-id">Workspace ID (optional)</label>
+          <input id="workspace-id" placeholder="Workspace ID" />
+          <button id="upload-document">Upload and index</button>
+          <p id="upload-message" class="message" role="status"></p>
+        </article>
+      </section>
+
+      <section class="card chat-card">
+        <div class="section-heading">
+          <div>
+            <h2>Ask AURA</h2>
+            <p class="muted">Answers are generated only from retrieved evidence.</p>
+          </div>
+          <button id="clear-chat" class="secondary">Clear chat</button>
+        </div>
+        <div id="chat-messages" class="chat-messages" aria-live="polite">
+          <p class="chat-empty">Ask a question about your indexed documents.</p>
+        </div>
+        <form id="chat-form" class="chat-form">
+          <input id="chat-question" required maxlength="10000" placeholder="Ask a question..." autocomplete="off" />
+          <button id="send-question" type="submit">Ask</button>
+        </form>
+        <p id="chat-error" class="message error-message" role="alert"></p>
+      </section>
+
+      <section class="card">
+        <div class="section-heading">
+          <div>
+            <h2>Conversations</h2>
+            <p class="muted">Switch between tenant-scoped chat histories.</p>
+          </div>
+          <button id="refresh-conversations" class="secondary">Refresh</button>
+        </div>
+        <div id="conversation-list" class="conversation-list">
+          <p class="muted">No conversations loaded.</p>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-heading">
+          <div>
+            <h2>Ingestion job</h2>
+            <p class="muted">Paste a job ID from an upload response to check progress.</p>
+          </div>
+          <button id="refresh-job" class="secondary">Refresh</button>
+        </div>
+        <div class="job-row">
+          <input id="job-id" placeholder="Job ID" />
+          <span id="job-status" class="status status-neutral">No job selected</span>
+        </div>
+        <pre id="job-details" class="details">No job loaded.</pre>
+      </section>
+
+      <section class="card">
+        <div class="section-heading">
+          <div>
+            <h2>Documents</h2>
+            <p class="muted">Documents belonging to the current tenant.</p>
+          </div>
+          <button id="refresh-documents" class="secondary">Refresh</button>
+        </div>
+        <div id="document-list" class="document-list">
+          <p class="muted">No documents loaded.</p>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-heading">
+          <div>
+            <h2>Metrics</h2>
+            <p class="muted">Read-only Prometheus-compatible API metrics.</p>
+          </div>
+          <button id="refresh-metrics" class="secondary">Refresh</button>
+        </div>
+        <pre id="metrics" class="details">No metrics loaded.</pre>
+      </section>
+    </main>
+    <script src="./app.js"></script>
+  </body>
+</html>
