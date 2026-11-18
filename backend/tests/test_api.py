@@ -37,6 +37,7 @@ def test_api_requires_configuration(monkeypatch):
 
     assert response.status_code == 503
     assert response.json()["detail"] == "API authentication is not configured"
+    assert response.headers["X-Request-ID"]
 
 
 def test_api_rejects_invalid_key(configured_api_key):
@@ -48,6 +49,11 @@ def test_api_rejects_invalid_key(configured_api_key):
 
     assert response.status_code == 401
     assert response.json()["detail"] == "Invalid or missing API key"
+    assert response.headers["X-Request-ID"]
+
+    metrics_response = client.get("/metrics")
+    assert metrics_response.status_code == 200
+    assert 'path="/api/rag/ask"' in metrics_response.text
 
 
 def test_api_validates_question(configured_api_key):
