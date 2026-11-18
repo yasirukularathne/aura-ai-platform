@@ -39,8 +39,11 @@ app.add_middleware(
     ],
 )
 
-app.add_middleware(RequestContextMiddleware)
+# Starlette makes the last-added middleware the outermost layer.
+# RequestContextMiddleware must wrap ApiKeyMiddleware so rejected requests
+# (401/429/503) are also assigned request IDs and included in metrics/logs.
 app.add_middleware(ApiKeyMiddleware)
+app.add_middleware(RequestContextMiddleware)
 
 app.include_router(rag_router)
 app.include_router(ml_router)
