@@ -33,17 +33,19 @@ services:
     build:
       context: ./backend
     container_name: aura-worker
+    user: "10001:10001"
     env_file:
       - .env
     environment:
       <<: *aura-environment
+      HOME: /tmp
+      HF_HOME: /tmp/aura-hf
       REDIS_URL: redis://redis:6379/0
       DATABASE_URL: postgresql://aura:aura@postgres:5432/aura
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/1
     volumes:
-      - document_uploads:/app/data/documents/uploads
-      - application_data:/app/data
+      - document_uploads:/app/data/documents/uploads:ro
     command: celery -A app.worker.celery_app worker --loglevel=INFO
     depends_on:
       - redis
