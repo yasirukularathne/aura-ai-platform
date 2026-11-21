@@ -1,7 +1,7 @@
 import hashlib
 import logging
 from pathlib import Path
-from uuid import uuid4
+from uuid import NAMESPACE_URL, uuid4, uuid5
 
 from app.rag.ingestion.chunker import split_documents
 from app.rag.ingestion.jobs import IngestionJobStore
@@ -12,6 +12,17 @@ from app.rag.vectorstore.qdrant_store import (
 )
 
 logger = logging.getLogger("aura.ingestion")
+
+
+def _build_point_ids(document_id: str, document_version: int, chunk_count: int) -> list[str]:
+    """Return stable Qdrant point IDs for every chunk in a document version."""
+    return [
+        str(uuid5(
+            NAMESPACE_URL,
+            f"aura:{document_id}:v{document_version}:chunk:{index}",
+        ))
+        for index in range(chunk_count)
+    ]
 
 
 def index_document(
@@ -39,11 +50,15 @@ def index_document(
     chunks = split_documents(documents)
     if not chunks:
         raise ValueError("The document did not contain indexable text")
+    document_version = 1
+    point_ids = _build_point_ids(document_id, document_version, len(chunks))
     for index, chunk in enumerate(chunks):
-        chunk.metadata["aura_chunk_id"] = f"{document_id}:{index}"
+        chunk.metadata["aura_chunk_id"] = point_ids[index]
         chunk.metadata["chunk_index"] = index
 
-    create_vector_store(chunks)
+    # Explicit stable IDs make a retry overwrite points from its previous
+    # attempt instead of creating duplicate vectors.
+    create_vector_store(chunks, ids=point_ids)
     logger.info(
         "document_indexed",
         extra={"path": str(file_path), "chunks": len(chunks)},
