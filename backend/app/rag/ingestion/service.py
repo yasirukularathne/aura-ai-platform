@@ -8,7 +8,6 @@ from app.rag.ingestion.jobs import IngestionJobStore
 from app.rag.ingestion.loaders import load_document
 from app.rag.vectorstore.qdrant_store import (
     create_vector_store,
-    delete_document_vectors,
     delete_obsolete_document_versions,
 )
 
