@@ -68,7 +68,7 @@ def ensure_collection(
             )
 
 
-def create_vector_store(chunks):
+def create_vector_store(chunks, ids: list[str] | None = None):
     from app.rag.embeddings.embedding_model import get_embedding_model
 
     embeddings = get_embedding_model()
@@ -82,7 +82,7 @@ def create_vector_store(chunks):
         embedding=embeddings,
     )
 
-    vector_store.add_documents(chunks)
+    vector_store.add_documents(chunks, ids=ids)
 
     return vector_store
 
