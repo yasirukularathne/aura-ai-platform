@@ -1,6 +1,5 @@
-from app.ml.prediction.predictor import ChurnPredictor
 from app.ml.customer_repository import CustomerRepository
-
+from app.ml.prediction.predictor import ChurnPredictor
 
 predictor = ChurnPredictor()
 customer_repository = CustomerRepository()

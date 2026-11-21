@@ -6,6 +6,10 @@ class BM25Retriever:
     def __init__(self, documents):
         self.documents = documents
 
+        if not documents:
+            self.bm25 = None
+            return
+
         tokenized_documents = [
             document.page_content.lower().split()
             for document in documents
@@ -14,6 +18,8 @@ class BM25Retriever:
         self.bm25 = BM25Okapi(tokenized_documents)
 
     def retrieve(self, query: str, k: int = 5):
+        if self.bm25 is None:
+            return []
 
         tokenized_query = query.lower().split()
 

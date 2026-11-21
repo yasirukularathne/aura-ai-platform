@@ -1,6 +1,10 @@
 # Python
 __pycache__/
 *.pyc
+.coverage
+htmlcov/
+.ruff_cache/
+.pytest_cache/
 venv/
 .env
 
@@ -11,6 +15,13 @@ venv/
 # Data
 data/documents/*
 data/datasets/*
+data/*.db
+/backend/data/*.db
+
+# Local test artifacts
+/aura_e2e_test_20261107.txt
+/backend/app/agents/rag_agent.py.backup
+/backend/app/rag/generation/prompt.py.backup
 
 # Model artifacts
 models/

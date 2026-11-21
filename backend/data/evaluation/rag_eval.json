@@ -1,0 +1,52 @@
+{
+  "dataset": "aura-rag-regression-v1",
+  "description": "Small fixed regression set for retrieval, grounded answers, citations, and abstention.",
+  "version": 1,
+  "cases": [
+    {
+      "id": "policy-leave-001",
+      "category": "grounded",
+      "question": "How many annual leave days are provided?",
+      "reference_answer": "Eligible employees receive 14 days of annual leave.",
+      "required_terms": ["14 days", "annual leave"],
+      "expected_document": "company_policy.pdf",
+      "expected_page": 12,
+      "expected_citation": {"source": "company_policy.pdf", "page": 12},
+      "must_have_sources": true,
+      "expected_evidence_sufficient": true
+    },
+    {
+      "id": "policy-security-001",
+      "category": "grounded",
+      "question": "Where are authentication requirements explained?",
+      "reference_answer": "Authentication requirements are explained in the security requirements section.",
+      "required_terms": ["authentication", "security requirements"],
+      "expected_document": "security_requirements.pdf",
+      "expected_page": 4,
+      "expected_citation": {"source": "security_requirements.pdf", "page": 4},
+      "must_have_sources": true,
+      "expected_evidence_sufficient": true
+    },
+    {
+      "id": "policy-unsupported-001",
+      "category": "unsupported",
+      "question": "What is the company's policy for colonizing Mars?",
+      "reference_answer": "",
+      "must_have_sources": false,
+      "expected_evidence_sufficient": false,
+      "expected_behavior": "safe_fallback"
+    },
+    {
+      "id": "policy-refund-001",
+      "category": "grounded",
+      "question": "What is the refund period?",
+      "reference_answer": "Refunds are available within thirty days.",
+      "required_terms": ["refunds", "thirty days"],
+      "expected_document": "customer_policy.pdf",
+      "expected_page": 3,
+      "expected_citation": {"source": "customer_policy.pdf", "page": 3},
+      "must_have_sources": true,
+      "expected_evidence_sufficient": true
+    }
+  ]
+}

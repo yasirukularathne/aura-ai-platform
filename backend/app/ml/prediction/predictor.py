@@ -5,13 +5,8 @@ from pathlib import Path
 import joblib
 import pandas as pd
 
-from ..explainability.shap_explainer import (
-    ChurnExplainer
-)
-from .risk import (
-    calculate_risk
-)
-
+from ..explainability.shap_explainer import ChurnExplainer
+from .risk import calculate_risk
 
 BASE_DIR = Path(
     __file__

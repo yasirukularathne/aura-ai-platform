@@ -1,10 +1,10 @@
 
 from pathlib import Path
 
-from langchain_community.document_loaders import PyPDFLoader
-
 
 def load_pdf(file_path: str):
+    from langchain_community.document_loaders import PyPDFLoader
+
     path = Path(file_path)
 
     if not path.exists():
@@ -15,5 +15,4 @@ def load_pdf(file_path: str):
     documents = loader.load()
 
     return documents
-
 

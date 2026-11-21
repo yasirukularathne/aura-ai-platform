@@ -1,9 +1,7 @@
 from typing import TypedDict
 
-from langgraph.graph import StateGraph, START, END
-
 from app.ml.tools import churn_prediction_tool
-
+from langgraph.graph import END, START, StateGraph
 
 # ============================================================
 # 1. ML STATE
