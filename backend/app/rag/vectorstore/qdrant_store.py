@@ -54,7 +54,6 @@ def ensure_collection(
         "metadata.aura_workspace_id",
         "metadata.aura_job_id",
         "metadata.aura_document_id",
-        "metadata.document_version",
     ):
         if field_name not in payload_schema:
             client.create_payload_index(
@@ -62,6 +61,13 @@ def ensure_collection(
                 field_name=field_name,
                 field_schema=models.PayloadSchemaType.KEYWORD,
             )
+
+    if "metadata.document_version" not in payload_schema:
+        client.create_payload_index(
+            collection_name=QDRANT_COLLECTION_NAME,
+            field_name="metadata.document_version",
+            field_schema=models.PayloadSchemaType.INTEGER,
+        )
 
 
 def create_vector_store(chunks, ids: list[str] | None = None):
